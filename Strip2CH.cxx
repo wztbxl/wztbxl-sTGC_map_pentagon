@@ -24,6 +24,7 @@ using namespace std;
 //initialize the relationship between the electronic channels and the shirps
 //the VMM channel will be named as #FEB*10000+#Vmm*1000+Vmm_channel
 //Note the frist number of FEB and VMM is 0. if DAQ start at 0, the DAQ returned number should add 1
+//in the map file the VMM channel start form 0.
 // filename should be the path to save the data file 
 void Strip2CH :: init( string path )
 {
@@ -43,9 +44,9 @@ void Strip2CH :: init( string path )
         if ( (int)line.at(0) < 48 || (int)line.at(0) > 57 ) continue;
         cout << line << endl;
         iss >> Row_num >> FEB_num >> VMM_num >> VMM_ch >> strip_ch;
-        cout << "Row_num = " << Row_num << " FEB_num = " << FEB_num << " Vmm_num " << VMM_num << " Vmm_ch " << VMM_ch << " Strip channel" << strip_ch << endl;
+        cout << "Row_num = " << Row_num << " FEB_num = " << FEB_num << " Vmm_num = " << VMM_num << " Vmm_ch = " << VMM_ch << " Strip channel = " << strip_ch << endl;
         int VMM_number = FEB_num*10000+VMM_num*1000+VMM_ch;
-        int Strip_number = Row_num*1000+strip_ch;
+        int Strip_number = (Row_num+1)*1000+strip_ch;// if row start from 0, but I think it is under our control
         Channel_2_Strip[VMM_number] = Strip_number;
         cout << "VMM number = " << VMM_number << endl;
         cout << "Strip number = " << Strip_number << endl;
@@ -88,8 +89,13 @@ void Strip2CH :: init( string path )
 // strips were named as #Row*1000+strip_number
 int Strip2CH :: GetStripNumber( int FEB, int VMM, int Channel )
 {
-    int VMM_number = FEB*10000+VMM*1000+Channel;
-    int strip_number = Channel_2_Strip[VMM_number];
+    FEB = FEB%6;//if FEBs are [0..5]
+    int VMM_number = (FEB+1)*10000+(VMM+1)*1000+(Channel+1);//if VMM is [0..3]
+    // FEB = FEB%6;//if FEBs are 1-96
+    // if (FEB == 0) FEB = 6;//if FEBs are 1-96
+    // int VMM_number = FEB*10000+VMM*1000+(Channel+1);//if VMM is [1..4]
+    int strip_number = Channel_2_Strip[VMM_number]; // how about the fake VMM_number? how to debug? // the fake number will return 0
+    cout << "VMM_number = " << VMM_number << " strip_number = " <<strip_number << endl;
     return strip_number;
 }
 
@@ -104,5 +110,15 @@ int Strip2CH :: GetStation(int ROB, int &Quadrant, int &Disk)
     Disk = (ROB-1)/4+1;
     Quadrant = (ROB-1)%4+1;
     int station_num = station[ROB];
-    return 1;
+    return station_num;
 }
+// get the front and back chamber
+// if Real data start from 0, all the FEBs should add 1
+// for the return number, 0 is front chamber, 1 is back chamber, return -1 means you put a wrong number
+int Strip2CH :: GetChamber(int FEB)
+{
+    if ( FEB >= 0 && FEB <=5 )
+        return (FEB)%2;
+    else return -1;
+}
+

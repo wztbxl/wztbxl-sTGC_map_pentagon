@@ -20,6 +20,7 @@ public:
     void init( std :: string path ); // init the relationship between the electronic channels and the strips
     int GetStripNumber( int FEB, int VMM, int Channel );// update the rule for the pentagon map 
     int GetStation(int ROB, int &Quadrant, int &Disk);
+    int GetChamber(int FEB);
     ~Strip2CH();
 };
 
