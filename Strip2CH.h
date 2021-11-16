@@ -21,6 +21,7 @@ public:
     int GetStripNumber( int FEB, int VMM, int Channel );// update the rule for the pentagon map 
     int GetStation(int ROB, int &Quadrant, int &Disk);
     int GetChamber(int FEB);
+    int GetVmmChannel(int Row, int Channel);
     ~Strip2CH();
 };
 

@@ -89,10 +89,10 @@ void Strip2CH :: init( string path )
 // strips were named as #Row*1000+strip_number
 int Strip2CH :: GetStripNumber( int FEB, int VMM, int Channel )
 {
-    FEB = FEB%6;//if FEBs are [0..5]
-    int VMM_number = (FEB+1)*10000+(VMM+1)*1000+(Channel+1);//if VMM is [0..3]
+    FEB = FEB%6;//if FEBs are [1..6]
+    if (FEB == 0) FEB = 6;
+    int VMM_number = (FEB)*10000+(VMM)*1000+(Channel);//if VMM is [0..3]
     // FEB = FEB%6;//if FEBs are 1-96
-    // if (FEB == 0) FEB = 6;//if FEBs are 1-96
     // int VMM_number = FEB*10000+VMM*1000+(Channel+1);//if VMM is [1..4]
     int strip_number = Channel_2_Strip[VMM_number]; // how about the fake VMM_number? how to debug? // the fake number will return 0
     cout << "VMM_number = " << VMM_number << " strip_number = " <<strip_number << endl;
@@ -105,20 +105,35 @@ int Strip2CH :: GetStripNumber( int FEB, int VMM, int Channel )
 // D A
 // C B
 // 1st is A, 2nd is D, 3rd is C, 4th is D
+// now only the Quadrant is correct number
 int Strip2CH :: GetStation(int ROB, int &Quadrant, int &Disk)
 {
-    Disk = (ROB-1)/4+1;
+    // Disk = (ROB-1)/4+1;
+    Disk = -1; // now disk do not dicide by RDO
     Quadrant = (ROB-1)%4+1;
     int station_num = station[ROB];
     return station_num;
 }
 // get the front and back chamber
 // if Real data start from 0, all the FEBs should add 1
-// for the return number, 0 is front chamber, 1 is back chamber, return -1 means you put a wrong number
+// for the return number, 1 is front chamber, 0 is back chamber, return -1 means you put a wrong number
 int Strip2CH :: GetChamber(int FEB)
 {
-    if ( FEB >= 0 && FEB <=5 )
+    if ( FEB >= 1 && FEB <=6 )
         return (FEB)%2;
     else return -1;
+}
+//
+int Strip2CH :: GetVmmChannel(int Row, int Channel)
+{
+    double VMM_num = -99;
+    double Strip_num = (Row+1)*1000+Channel;
+    for( auto it = Channel_2_Strip.begin(); it != Channel_2_Strip.end(); it++)
+    {
+        if (it->second == Strip_num) VMM_num = it->first;
+    }
+
+    return VMM_num;
+
 }
 
